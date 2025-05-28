@@ -64,44 +64,49 @@ st.markdown("### Begin by telling us what you like — this survey will guide yo
 # Initialize session state for navigation and form values
 if 'step' not in st.session_state:
     st.session_state.step = 1
+if 'responses' not in st.session_state:
     st.session_state.responses = {}
 
 # Restart functionality
-if st.button("🔄 Start a New Search"):
+if st.button("🔄 Start a New Search", key="reset"):
     st.session_state.step = 1
     st.session_state.responses = {}
-    st.experimental_rerun()
+    st.stop()
 
 # Progress bar
 total_steps = 5
 progress = int((st.session_state.step / total_steps) * 100)
 st.progress(progress)
 
+# Navigation Logic
+def go_next():
+    st.session_state.step += 1
+
 # Step 1
 if st.session_state.step == 1:
     region = st.multiselect("Which regions of the U.S. are you open to?", [
         "Southeast", "Southwest", "Pacific Coast", "Midwest", "Northeast", "Mountain West"])
-    if st.button("Next"):
+    if st.button("Next", key="next1"):
         st.session_state.responses['region'] = region
-        st.session_state.step += 1
+        go_next()
         st.experimental_rerun()
 
 # Step 2
 elif st.session_state.step == 2:
     climate = st.multiselect("What climate do you prefer?", [
         "Warm year-round", "Four seasons", "Mild winters", "Coastal", "Mountain", "Dry/Desert"])
-    if st.button("Next"):
+    if st.button("Next", key="next2"):
         st.session_state.responses['climate'] = climate
-        st.session_state.step += 1
+        go_next()
         st.experimental_rerun()
 
 # Step 3
 elif st.session_state.step == 3:
     home_type = st.multiselect("What type of home do you prefer?", [
         "Single-family", "Townhome", "Condo", "55+ Community"])
-    if st.button("Next"):
+    if st.button("Next", key="next3"):
         st.session_state.responses['home_type'] = home_type
-        st.session_state.step += 1
+        go_next()
         st.experimental_rerun()
 
 # Step 4
@@ -110,18 +115,18 @@ elif st.session_state.step == 4:
         "< 1500", "1500–2000", "2000–2500", "> 2500"])
     beds = st.slider("Minimum number of bedrooms", 1, 5, 3)
     baths = st.slider("Minimum number of bathrooms", 1, 4, 2)
-    if st.button("Next"):
+    if st.button("Next", key="next4"):
         st.session_state.responses['sqft'] = sqft
         st.session_state.responses['beds'] = beds
         st.session_state.responses['baths'] = baths
-        st.session_state.step += 1
+        go_next()
         st.experimental_rerun()
 
 # Step 5 - Completion
 elif st.session_state.step == 5:
     st.success("🎉 Thank you! Your preferences have been saved. You are ready to view your matches.")
     st.json(st.session_state.responses)
-    if st.button("🔍 Show My Matches"):
+    if st.button("🔍 Show My Matches", key="show_matches"):
         st.markdown("### Matches (sample)")
         mock_results = [
             {
