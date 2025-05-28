@@ -12,30 +12,31 @@ st.set_page_config(page_title="Home Matchmaker Survey", layout="wide")
 st.markdown("""
     <style>
     body {
-        background: linear-gradient(to right, #f5f7fa, #c3cfe2);
-        color: #333;
+        background: linear-gradient(to right, #000000, #004080, #007d21);
+        color: #ffffff;
     }
     .stApp {
-        background: linear-gradient(to bottom, #f8f9fa, #e0e0e0);
+        background: linear-gradient(to bottom, #1c1c1c, #2e3a59);
         padding: 2rem;
         font-family: 'Segoe UI', sans-serif;
     }
     .stButton > button {
-        background-color: #0071e3;
+        background-color: #00aa88;
         color: white;
         font-size: 1rem;
         padding: 0.5rem 1.5rem;
         border-radius: 6px;
     }
     .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-        color: #0052cc;
+        color: #00ccff;
     }
     .result-card {
-        background-color: white;
+        background-color: #ffffff;
+        color: #000000;
         border-radius: 12px;
         padding: 1rem;
         margin-bottom: 1rem;
-        box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
     }
     a {
         color: #0071e3;
@@ -44,6 +45,12 @@ st.markdown("""
     }
     a:hover {
         text-decoration: underline;
+    }
+    .home-image {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 1rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -124,27 +131,31 @@ if st.button("🔍 Find My Matches"):
             "score": 92,
             "home": "3BR / 2BA | 2100 sq ft | $430K",
             "features": "Single-story, Open Floor Plan, Screened Porch",
-            "link": "https://www.realtor.com/realestateandhomes-detail/2100-Preserve-Way_Summerville_SC_29483_M95867-16314"
+            "link": "https://www.realtor.com/realestateandhomes-detail/2100-Preserve-Way_Summerville_SC_29483_M95867-16314",
+            "image": "https://cdn.realtor.com/medias/2100-preserve-way.jpg"
         },
         {
             "location": "Asheville, NC",
             "score": 88,
             "home": "2BR / 2BA | 1800 sq ft | $395K",
             "features": "Mountain View, 55+ Community, Garden Area",
-            "link": "https://www.realtor.com/realestateandhomes-detail/1800-Sweet-Grass-Ln_Asheville_NC_28804_M93638-10257"
+            "link": "https://www.realtor.com/realestateandhomes-detail/1800-Sweet-Grass-Ln_Asheville_NC_28804_M93638-10257",
+            "image": "https://cdn.realtor.com/medias/1800-sweet-grass.jpg"
         },
         {
             "location": "Bluffton, SC",
             "score": 84,
             "home": "4BR / 3BA | 2400 sq ft | $520K",
             "features": "Gated Entry, Resort-Style Pool, Golf Nearby",
-            "link": "https://www.realtor.com/realestateandhomes-detail/2400-River-View-Dr_Bluffton_SC_29910_M98234-29817"
+            "link": "https://www.realtor.com/realestateandhomes-detail/2400-River-View-Dr_Bluffton_SC_29910_M98234-29817",
+            "image": "https://cdn.realtor.com/medias/2400-river-view.jpg"
         }
     ]
 
     for result in mock_results:
         st.markdown(f"""
         <div class='result-card'>
+            <img src='{result['image']}' alt='Home Image' class='home-image'/>
             <h4>{result['location']} — Match Score: {result['score']}%</h4>
             <p><strong>{result['home']}</strong><br/>
             Features: {result['features']}<br/>
