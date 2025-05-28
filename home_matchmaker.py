@@ -67,12 +67,6 @@ if 'step' not in st.session_state:
 if 'responses' not in st.session_state:
     st.session_state.responses = {}
 
-# Restart functionality
-if st.button("🔄 Start a New Search", key="reset"):
-    st.session_state.step = 1
-    st.session_state.responses = {}
-    st.stop()
-
 # Progress bar
 total_steps = 5
 progress = int((st.session_state.step / total_steps) * 100)
@@ -82,32 +76,47 @@ st.progress(progress)
 def go_next():
     st.session_state.step += 1
 
+# Restart functionality
+if st.button("🔄 Start a New Search", key="reset"):
+    st.session_state.step = 1
+    st.session_state.responses = {}
+    st.experimental_rerun()
+
 # Step 1
 if st.session_state.step == 1:
     region = st.multiselect("Which regions of the U.S. are you open to?", [
         "Southeast", "Southwest", "Pacific Coast", "Midwest", "Northeast", "Mountain West"])
     if st.button("Next", key="next1"):
-        st.session_state.responses['region'] = region
-        go_next()
-        st.experimental_rerun()
+        if region:
+            st.session_state.responses['region'] = region
+            go_next()
+            st.experimental_rerun()
+        else:
+            st.warning("Please select at least one region before proceeding.")
 
 # Step 2
 elif st.session_state.step == 2:
     climate = st.multiselect("What climate do you prefer?", [
         "Warm year-round", "Four seasons", "Mild winters", "Coastal", "Mountain", "Dry/Desert"])
     if st.button("Next", key="next2"):
-        st.session_state.responses['climate'] = climate
-        go_next()
-        st.experimental_rerun()
+        if climate:
+            st.session_state.responses['climate'] = climate
+            go_next()
+            st.experimental_rerun()
+        else:
+            st.warning("Please select at least one climate preference before proceeding.")
 
 # Step 3
 elif st.session_state.step == 3:
     home_type = st.multiselect("What type of home do you prefer?", [
         "Single-family", "Townhome", "Condo", "55+ Community"])
     if st.button("Next", key="next3"):
-        st.session_state.responses['home_type'] = home_type
-        go_next()
-        st.experimental_rerun()
+        if home_type:
+            st.session_state.responses['home_type'] = home_type
+            go_next()
+            st.experimental_rerun()
+        else:
+            st.warning("Please select at least one home type before proceeding.")
 
 # Step 4
 elif st.session_state.step == 4:
@@ -116,11 +125,14 @@ elif st.session_state.step == 4:
     beds = st.slider("Minimum number of bedrooms", 1, 5, 3)
     baths = st.slider("Minimum number of bathrooms", 1, 4, 2)
     if st.button("Next", key="next4"):
-        st.session_state.responses['sqft'] = sqft
-        st.session_state.responses['beds'] = beds
-        st.session_state.responses['baths'] = baths
-        go_next()
-        st.experimental_rerun()
+        if sqft and beds and baths:
+            st.session_state.responses['sqft'] = sqft
+            st.session_state.responses['beds'] = beds
+            st.session_state.responses['baths'] = baths
+            go_next()
+            st.experimental_rerun()
+        else:
+            st.warning("Please complete all selections before proceeding.")
 
 # Step 5 - Completion
 elif st.session_state.step == 5:
