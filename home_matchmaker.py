@@ -42,8 +42,27 @@ st.set_page_config(page_title="Home Matchmaker Survey", layout="wide")
 st.title("🏡 Find Your Ideal Home and Location")
 st.markdown("Use this survey to help determine your best match for your next home and neighborhood.")
 
-# Survey questions (same as previous version, trimmed here for clarity)
-# [... SNIPPED FOR BREVITY — include all same question logic as before ...]
+# Placeholder for the full survey code (logic would be restored in real use)
+region = []
+climate = []
+community_size = ""
+proximity = []
+priority_areas = ""
+home_type = []
+sqft = ""
+beds = 3
+baths = 2
+floorplan = []
+outdoor = []
+amenities = []
+lifestyle = []
+budget = ""
+monthly = ""
+tax_pref = []
+loan_type = "Yes"
+reasons = []
+must_haves = ""
+nice_haves = ""
 
 if st.button("🔍 Find My Matches"):
     survey_data = {
