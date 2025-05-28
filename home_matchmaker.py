@@ -44,8 +44,27 @@ st.markdown("""
 st.title("🏡 Find Your Ideal Home and Location")
 st.markdown("Use this survey to help determine your best match for your next home and neighborhood.")
 
-# Survey questions (same as previous version, trimmed here for clarity)
-# [... SNIPPED FOR BREVITY — include all same question logic as before ...]
+# Initialize dummy values to avoid NameError
+region = []
+climate = []
+community_size = ""
+proximity = []
+priority_areas = ""
+home_type = []
+sqft = ""
+beds = 0
+baths = 0
+floorplan = []
+outdoor = []
+amenities = []
+lifestyle = []
+budget = ""
+monthly = ""
+tax_pref = []
+loan_type = ""
+reasons = []
+must_haves = ""
+nice_haves = ""
 
 if st.button("🔍 Find My Matches"):
     survey_data = {
