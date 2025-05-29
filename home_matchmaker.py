@@ -31,13 +31,18 @@ st.markdown("""
     .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
         color: #ffffff;
     }
+    .result-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
     .result-card {
         background-color: #ffffff;
         color: #000000;
         border-radius: 12px;
         padding: 1rem;
-        margin-bottom: 1rem;
         box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+        width: calc(33% - 16px);
     }
     a {
         color: #004080;
@@ -110,6 +115,7 @@ if submitted:
         st.error(listings["error"])
     elif listings.get("props"):
         results = listings["props"][:10]  # Show first 10 results
+        st.markdown("<div class='result-grid'>", unsafe_allow_html=True)
         for result in results:
             st.markdown(f"""
             <div class='result-card'>
@@ -117,8 +123,9 @@ if submitted:
                 <h4>{result.get('addressCity', 'City')}, {result.get('addressState', '')} — {result.get('price', 'N/A')}</h4>
                 <p><strong>{result.get('beds', '?')}BR / {result.get('baths', '?')}BA</strong><br/>
                 Features: {result.get('statusType', 'Available')}<br/>
-                <a href='{result.get('detailUrl', '#')}' target='_blank'>🔗 View Listing</a></p>
+                <a href='https://www.zillow.com{result.get('detailUrl', '')}' target='_blank'>🔗 View Listing</a></p>
             </div>
             """, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.warning("No listings found in the selected area.")
