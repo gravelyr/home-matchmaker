@@ -78,11 +78,11 @@ def map_home_types(home_type_list):
 
 # Function to fetch real Zillow listings via region using extended search
 
-def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, region, lot_size_min=None, keyword_filter=None):
+def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, region, lot_size_min=None, keyword_filter=None, sqft_min=None):
     city_lookup = {
         "Southeast": ["Asheville, NC", "Gatlinburg, TN", "Charleston, SC", "Savannah, GA", "Greenville, SC", "Charlotte, NC", "Huntersville, NC"],
         "Southwest": ["Phoenix, AZ", "Tucson, AZ", "Sedona, AZ"],
-        "Pacific Coast": ["San Diego, CA", "Los Angeles, CA"],
+        "Pacific Coast": ["San Diego, CA", "Los Angeles, CA", "Seattle, WA", "Portland, CA"],
         "Midwest": ["Columbus, OH", "Indianapolis, IN"],
         "Northeast": ["Boston, MA", "Philadelphia, PA"],
         "Mountain West": ["Boise, ID", "Salt Lake City, UT"]
@@ -110,6 +110,8 @@ def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, 
             querystring["lot_min"] = lot_size_min
         if keyword_filter:
             querystring["keywords"] = keyword_filter
+        if sqft_min:
+            querystring["sqft_min"] = sqft_min
 
         response = requests.get(url, headers=headers, params=querystring)
         if response.status_code == 200:
@@ -134,8 +136,10 @@ with st.form(key="home_form"):
     home_type = st.multiselect("What type of home do you prefer?", [
         "Single-family", "Townhome", "Condo", "55+ Community"])
 
-    sqft = st.selectbox("Ideal home square footage:", [
-        "< 1500", "1500–2000", "2000–2500", "> 2500"])
+    sqft_min = st.selectbox("Minimum home square footage:", [
+        "< 1500", "1500", "2000", "2500"], index=1)
+    sqft_min_value = 0 if sqft_min == "< 1500" else int(sqft_min)
+
     beds = st.slider("Minimum number of bedrooms", 1, 5, 3)
     baths = st.slider("Minimum number of bathrooms", 1, 4, 2)
     min_price = st.number_input("Minimum Price ($)", min_value=0, value=200000, step=10000)
@@ -153,7 +157,7 @@ with st.form(key="home_form"):
 
 if submitted:
     st.success("\U0001F389 Thank you! Your preferences have been saved. You are ready to view your matches.")
-    listings = fetch_zillow_listings(beds, baths, home_type, min_price, max_price, region, lot_size_min, keyword_filter)
+    listings = fetch_zillow_listings(beds, baths, home_type, min_price, max_price, region, lot_size_min, keyword_filter, sqft_min_value)
 
     if "error" in listings:
         st.error(listings["error"])
