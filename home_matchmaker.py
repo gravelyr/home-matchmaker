@@ -130,7 +130,10 @@ with st.form(key="home_form"):
     min_price = st.number_input("Minimum Price ($)", min_value=0, value=200000, step=10000)
     max_price = st.number_input("Maximum Price ($)", min_value=50000, value=600000, step=10000)
 
-    lot_size_min = st.number_input("Minimum Lot Size (sq ft) — optional", min_value=0, value=0, step=500)
+    lot_size_min_acres = st.selectbox("Minimum Lot Size (acres) — optional", [
+        "Any", "0.25", "0.5", "1", "2", "5", "10"], index=0)
+    lot_size_min = int(float(lot_size_min_acres) * 43560) if lot_size_min_acres != "Any" else None
+
     keyword_filter = st.text_input("Optional Keywords (comma separated)", help="E.g., pool, fenced yard, solar")
 
     desirable_nearby = st.multiselect("Must be within 30 minutes of:", ["Lake", "Mountain", "Beach", "Shopping", "Hospital", "Airport"])
