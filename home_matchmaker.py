@@ -133,13 +133,21 @@ if submitted:
         results = listings["props"][:12]  # Show up to 12 results in a grid layout
         st.markdown("<div class='result-grid'>", unsafe_allow_html=True)
         for result in results:
+            city = result.get('addressCity', result.get('city', 'Unknown City'))
+            state = result.get('addressState', result.get('state', ''))
+            price = result.get('price', 'N/A')
+            beds = result.get('beds', '?')
+            baths = result.get('baths', '?')
+            features = result.get('features', result.get('statusText', ''))
+            url = result.get('detailUrl')
+            full_url = f"https://www.zillow.com{url}" if url and not url.startswith("http") else url
             st.markdown(f"""
             <div class='result-card'>
                 <img src='{result.get('imgSrc', '')}' alt='Home Image' class='home-image'/>
-                <h4>{result.get('addressCity', 'City')}, {result.get('addressState', '')} — ${result.get('price', 'N/A'):,}</h4>
-                <p><strong>{result.get('beds', '?')} BR / {result.get('baths', '?')} BA</strong><br/>
-                Features: {result.get('statusType', 'Available')}<br/>
-                <a href='https://www.zillow.com{result.get('detailUrl', '')}' target='_blank'>🔗 View Listing</a></p>
+                <h4>{city}, {state} — ${price:,}</h4>
+                <p><strong>{beds} BR / {baths} BA</strong><br/>
+                Features: {features}<br/>
+                <a href='{full_url}' target='_blank'>🔗 View Listing</a></p>
             </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
