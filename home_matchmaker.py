@@ -67,16 +67,16 @@ st.markdown("### Fill out the form below to get matched with homes and communiti
 
 # Function to fetch real Zillow listings via region using extended search
 
-def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, region):
+def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, region, lot_size_min=None, keyword_filter=None):
     city_lookup = {
-        "Southeast": "Charleston, SC",
-        "Southwest": "Phoenix, AZ",
-        "Pacific Coast": "San Diego, CA",
-        "Midwest": "Columbus, OH",
-        "Northeast": "Boston, MA",
-        "Mountain West": "Boise, ID"
+        "Southeast": ["Asheville, NC", "Gatlinburg, TN", "Charleston, SC", "Savannah, GA", "Greenville, SC","Charlotte, NC", "Huntersville, NC"],
+        "Southwest": ["Phoenix, AZ", "Tucson, AZ","Sedona, AZ"],
+        "Pacific Coast": ["San Diego, CA", "Los Angeles, CA"],
+        "Midwest": ["Columbus, OH", "Indianapolis, IN"],
+        "Northeast": ["Boston, MA", "Philadelphia, PA"],
+        "Mountain West": ["Boise, ID", "Salt Lake City, UT"]
     }
-    cities = [city_lookup[r] for r in region if r in city_lookup]
+    cities = [city for r in region for city in city_lookup.get(r, [])]
 
     headers = {
         "x-rapidapi-host": "zillow-com1.p.rapidapi.com",
@@ -95,6 +95,11 @@ def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, 
             "price_min": min_price,
             "price_max": max_price
         }
+        if lot_size_min:
+            querystring["lot_min"] = lot_size_min
+        if keyword_filter:
+            querystring["keywords"] = keyword_filter
+
         response = requests.get(url, headers=headers, params=querystring)
         if response.status_code == 200:
             data = response.json()
@@ -125,18 +130,21 @@ with st.form(key="home_form"):
     min_price = st.number_input("Minimum Price ($)", min_value=0, value=200000, step=10000)
     max_price = st.number_input("Maximum Price ($)", min_value=50000, value=600000, step=10000)
 
+    lot_size_min = st.number_input("Minimum Lot Size (sq ft) — optional", min_value=0, value=0, step=500)
+    keyword_filter = st.text_input("Optional Keywords (comma separated)", help="E.g., pool, fenced yard, solar")
+
     desirable_nearby = st.multiselect("Must be within 30 minutes of:", ["Lake", "Mountain", "Beach", "Shopping", "Hospital", "Airport"])
 
     submitted = st.form_submit_button("🔍 Find My Matches")
 
 if submitted:
     st.success("🎉 Thank you! Your preferences have been saved. You are ready to view your matches.")
-    listings = fetch_zillow_listings(beds, baths, home_type, min_price, max_price, region)
+    listings = fetch_zillow_listings(beds, baths, home_type, min_price, max_price, region, lot_size_min, keyword_filter)
 
     if "error" in listings:
         st.error(listings["error"])
     elif listings.get("props"):
-        results = listings["props"][:12]  # Show up to 12 results in a grid layout
+        results = listings["props"]
         st.markdown("<div class='result-grid'>", unsafe_allow_html=True)
         for result in results:
             city = result.get('city', 'Unknown City')
