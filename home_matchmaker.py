@@ -80,8 +80,8 @@ def map_home_types(home_type_list):
 
 def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, region, lot_size_min=None, keyword_filter=None):
     city_lookup = {
-        "Southeast": ["Asheville, NC", "Gatlinburg, TN", "Charleston, SC", "Savannah, GA", "Greenville, SC","Charlotte, NC", "Huntersville, NC"],
-        "Southwest": ["Phoenix, AZ", "Tucson, AZ","Sedona, AZ"],
+        "Southeast": ["Asheville, NC", "Gatlinburg, TN", "Charleston, SC", "Savannah, GA", "Greenville, SC", "Charlotte, NC", "Huntersville, NC"],
+        "Southwest": ["Phoenix, AZ", "Tucson, AZ", "Sedona, AZ"],
         "Pacific Coast": ["San Diego, CA", "Los Angeles, CA"],
         "Midwest": ["Columbus, OH", "Indianapolis, IN"],
         "Northeast": ["Boston, MA", "Philadelphia, PA"],
@@ -167,6 +167,7 @@ if submitted:
             beds = result.get('beds', '?')
             baths = result.get('baths', '?')
             features = result.get('statusText', '')
+            address = result.get('addressStreet', '')
             url = result.get('detailUrl')
             full_url = f"https://www.zillow.com{url}" if url and not url.startswith("http") else url
             st.markdown(f"""
@@ -174,6 +175,7 @@ if submitted:
                 <img src='{result.get('imgSrc', '')}' alt='Home Image' class='home-image'/>
                 <h4>{city}, {state} — ${price:,}</h4>
                 <p><strong>{beds} BR / {baths} BA</strong><br/>
+                {address}<br/>
                 Features: {features}<br/>
                 <a href='{full_url}' target='_blank'>\U0001F517 View Listing</a></p>
             </div>
