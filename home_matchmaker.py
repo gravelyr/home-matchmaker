@@ -62,8 +62,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🏡 Bernie and Clem's Find a Home Tool!")
+st.title("\U0001F3E1 Bernie and Clem's Find a Home Tool!")
 st.markdown("### Fill out the form below to get matched with homes and communities based on your preferences.")
+
+# Function to map home types
+
+def map_home_types(home_type_list):
+    mapping = {
+        "Single-family": "house",
+        "Townhome": "townhouse",
+        "Condo": "condo",
+        "55+ Community": "house"
+    }
+    return [mapping[h] for h in home_type_list if h in mapping]
 
 # Function to fetch real Zillow listings via region using extended search
 
@@ -89,7 +100,7 @@ def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, 
         querystring = {
             "location": city,
             "status_type": "ForSale",
-            "home_type": home_type[0].lower().replace("+ ", "").replace(" ", "") if home_type else "house",
+            "home_type": ",".join(map_home_types(home_type)) if home_type else "house",
             "beds_min": beds_min,
             "baths_min": baths_min,
             "price_min": min_price,
@@ -138,10 +149,10 @@ with st.form(key="home_form"):
 
     desirable_nearby = st.multiselect("Must be within 30 minutes of:", ["Lake", "Mountain", "Beach", "Shopping", "Hospital", "Airport"])
 
-    submitted = st.form_submit_button("🔍 Find My Matches")
+    submitted = st.form_submit_button("\U0001F50D Find My Matches")
 
 if submitted:
-    st.success("🎉 Thank you! Your preferences have been saved. You are ready to view your matches.")
+    st.success("\U0001F389 Thank you! Your preferences have been saved. You are ready to view your matches.")
     listings = fetch_zillow_listings(beds, baths, home_type, min_price, max_price, region, lot_size_min, keyword_filter)
 
     if "error" in listings:
@@ -164,7 +175,7 @@ if submitted:
                 <h4>{city}, {state} — ${price:,}</h4>
                 <p><strong>{beds} BR / {baths} BA</strong><br/>
                 Features: {features}<br/>
-                <a href='{full_url}' target='_blank'>🔗 View Listing</a></p>
+                <a href='{full_url}' target='_blank'>\U0001F517 View Listing</a></p>
             </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
