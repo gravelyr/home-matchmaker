@@ -1,10 +1,9 @@
 # Home Matchmaker - Streamlit Survey App
-# Enhanced UI with step-by-step navigation, progress bar, and restart feature
+# Full-page version using real Zillow API call, now using user preferences
 
 import streamlit as st
-import pandas as pd
+import requests
 import json
-from datetime import datetime
 
 st.set_page_config(page_title="Home Matchmaker Survey", layout="wide")
 
@@ -57,107 +56,69 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# App Title
 st.title("🏡 Bernie and Clem's Find a Home Tool!")
-st.markdown("### Begin by telling us what you like — this survey will guide you to homes and communities that fit your needs.")
+st.markdown("### Fill out the form below to get matched with homes and communities based on your preferences.")
 
-# Initialize session state for navigation and form values
-if 'step' not in st.session_state:
-    st.session_state.step = 1
-if 'responses' not in st.session_state:
-    st.session_state.responses = {}
+# Function to fetch real Zillow listings via polygon using user preferences
+def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price):
+    url = "https://zillow-com1.p.rapidapi.com/propertyByPolygon"
+    querystring = {
+        "polygon": "-118.50394248962402 34.02926010734425, -118.5084056854248 34.02926010734425, -118.51286888122559 34.028691046671696, -118.51527214050293 34.02570341552858, -118.51321220397949 34.02257340341831, -118.51750373840332 34.0215774662657, -118.51681709289551 34.017878168811684, -118.51286888122559 34.016455319170184, -118.51080894470215 34.013324966013194, -118.50789070129395 34.010621386310234, -118.50411415100098 34.008629219864694, -118.49982261657715 34.008486920473, -118.49570274353027 34.007063913440916, -118.4919261932373 34.00891381793271, -118.48849296569824 34.01119056813859, -118.4860897064209 34.014463289606894, -118.48471641540527 34.018020452464164, -118.48042488098145 34.01858958468914, -118.4780216217041 34.0215774662657, -118.47939491271973 34.0249920592766, -118.47681999206543 34.02797971546417, -118.47493171691895 34.03125178964367, -118.4721851348877 34.034381481654364, -118.47733497619629 34.035377268536706, -118.48231315612793 34.035377268536706, -118.48677635192871 34.035377268536706, -118.49141120910645 34.03495050416125, -118.49604606628418 34.034096968969656, -118.49621772766113 34.03054047990366, -118.50033760070801 34.02926010734425, -118.50239753723145 34.032532132148006, -118.50394248962402 34.02926010734425",
+        "status_type": "ForSale",
+        "home_type": home_type[0] if home_type else "Houses",
+        "beds_min": beds_min,
+        "baths_min": baths_min,
+        "price_min": min_price,
+        "price_max": max_price
+    }
 
-# Progress bar
-total_steps = 5
-progress = int((st.session_state.step / total_steps) * 100)
-st.progress(progress)
+    headers = {
+        "x-rapidapi-host": "zillow-com1.p.rapidapi.com",
+        "x-rapidapi-key": "941903cba9msh1acce231bdba4f0p1366fajsn7ffc07b009ec"
+    }
 
-# Navigation Logic
-def go_next():
-    st.session_state.step += 1
+    response = requests.get(url, headers=headers, params=querystring)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return {"error": f"API error: {response.status_code}"}
 
-# Restart functionality
-if st.button("🔄 Start a New Search", key="reset"):
-    st.session_state.step = 1
-    st.session_state.responses = {}
-    st.experimental_rerun()
-
-# Step 1
-if st.session_state.step == 1:
+with st.form(key="home_form"):
     region = st.multiselect("Which regions of the U.S. are you open to?", [
         "Southeast", "Southwest", "Pacific Coast", "Midwest", "Northeast", "Mountain West"])
-    if st.button("Next", key="next1"):
-        if region:
-            st.session_state.responses['region'] = region
-            go_next()
-            st.experimental_rerun()
-        else:
-            st.warning("Please select at least one region before proceeding.")
 
-# Step 2
-elif st.session_state.step == 2:
     climate = st.multiselect("What climate do you prefer?", [
         "Warm year-round", "Four seasons", "Mild winters", "Coastal", "Mountain", "Dry/Desert"])
-    if st.button("Next", key="next2"):
-        if climate:
-            st.session_state.responses['climate'] = climate
-            go_next()
-            st.experimental_rerun()
-        else:
-            st.warning("Please select at least one climate preference before proceeding.")
 
-# Step 3
-elif st.session_state.step == 3:
     home_type = st.multiselect("What type of home do you prefer?", [
         "Single-family", "Townhome", "Condo", "55+ Community"])
-    if st.button("Next", key="next3"):
-        if home_type:
-            st.session_state.responses['home_type'] = home_type
-            go_next()
-            st.experimental_rerun()
-        else:
-            st.warning("Please select at least one home type before proceeding.")
 
-# Step 4
-elif st.session_state.step == 4:
     sqft = st.selectbox("Ideal home square footage:", [
         "< 1500", "1500–2000", "2000–2500", "> 2500"])
     beds = st.slider("Minimum number of bedrooms", 1, 5, 3)
     baths = st.slider("Minimum number of bathrooms", 1, 4, 2)
-    if st.button("Next", key="next4"):
-        if sqft and beds and baths:
-            st.session_state.responses['sqft'] = sqft
-            st.session_state.responses['beds'] = beds
-            st.session_state.responses['baths'] = baths
-            go_next()
-            st.experimental_rerun()
-        else:
-            st.warning("Please complete all selections before proceeding.")
+    min_price = st.number_input("Minimum Price ($)", min_value=0, value=200000, step=10000)
+    max_price = st.number_input("Maximum Price ($)", min_value=50000, value=600000, step=10000)
 
-# Step 5 - Completion
-elif st.session_state.step == 5:
+    submitted = st.form_submit_button("🔍 Find My Matches")
+
+if submitted:
     st.success("🎉 Thank you! Your preferences have been saved. You are ready to view your matches.")
-    st.json(st.session_state.responses)
-    if st.button("🔍 Show My Matches", key="show_matches"):
-        st.markdown("### Matches (sample)")
-        mock_results = [
-            {
-                "location": "Summerville, SC",
-                "score": 92,
-                "home": "3BR / 2BA | 2100 sq ft | $430K",
-                "features": "Single-story, Open Floor Plan, Screened Porch",
-                "link": "https://www.realtor.com/realestateandhomes-detail/2100-Preserve-Way_Summerville_SC_29483_M95867-16314",
-                "image": "https://cdn.realtor.com/medias/2100-preserve-way.jpg"
-            }
-        ]
-        for result in mock_results:
+    listings = fetch_zillow_listings(beds, baths, home_type, min_price, max_price)
+
+    if "error" in listings:
+        st.error(listings["error"])
+    elif listings.get("props"):
+        results = listings["props"][:10]  # Show first 10 results
+        for result in results:
             st.markdown(f"""
             <div class='result-card'>
-                <img src='{result['image']}' alt='Home Image' class='home-image'/>
-                <h4>{result['location']} — Match Score: {result['score']}%</h4>
-                <p><strong>{result['home']}</strong><br/>
-                Features: {result['features']}<br/>
-                <a href='{result['link']}' target='_blank'>🔗 View Listing</a></p>
+                <img src='{result.get('imgSrc', '')}' alt='Home Image' class='home-image'/>
+                <h4>{result.get('addressCity', 'City')}, {result.get('addressState', '')} — {result.get('price', 'N/A')}</h4>
+                <p><strong>{result.get('beds', '?')}BR / {result.get('baths', '?')}BA</strong><br/>
+                Features: {result.get('statusType', 'Available')}<br/>
+                <a href='{result.get('detailUrl', '#')}' target='_blank'>🔗 View Listing</a></p>
             </div>
             """, unsafe_allow_html=True)
-        st.download_button("📥 Download My Matches", data=json.dumps(mock_results, indent=2), file_name="home_match_results.json")
+    else:
+        st.warning("No listings found in the selected area.")
