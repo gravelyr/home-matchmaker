@@ -98,7 +98,13 @@ def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, 
         response = requests.get(url, headers=headers, params=querystring)
         if response.status_code == 200:
             data = response.json()
-            all_results.extend([prop for prop in data.get("props", []) if prop.get("price") and min_price <= prop.get("price") <= max_price])
+            filtered_props = [
+                prop for prop in data.get("props", [])
+                if prop.get("price") and min_price <= prop.get("price") <= max_price
+                and prop.get("beds", 0) >= beds_min
+                and prop.get("baths", 0) >= baths_min
+            ]
+            all_results.extend(filtered_props)
 
     return {"props": all_results} if all_results else {"error": "No listings found for selected region(s)."}
 
@@ -133,12 +139,12 @@ if submitted:
         results = listings["props"][:12]  # Show up to 12 results in a grid layout
         st.markdown("<div class='result-grid'>", unsafe_allow_html=True)
         for result in results:
-            city = result.get('addressCity', result.get('city', 'Unknown City'))
-            state = result.get('addressState', result.get('state', ''))
+            city = result.get('city', 'Unknown City')
+            state = result.get('state', '')
             price = result.get('price', 'N/A')
             beds = result.get('beds', '?')
             baths = result.get('baths', '?')
-            features = result.get('features', result.get('statusText', ''))
+            features = result.get('statusText', '')
             url = result.get('detailUrl')
             full_url = f"https://www.zillow.com{url}" if url and not url.startswith("http") else url
             st.markdown(f"""
