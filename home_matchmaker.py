@@ -65,44 +65,45 @@ st.markdown("""
 st.title("🏡 Bernie and Clem's Find a Home Tool!")
 st.markdown("### Fill out the form below to get matched with homes and communities based on your preferences.")
 
-# Function to fetch real Zillow listings via bounding box using user preferences
-def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, region):
-    region_bounds = {
-        "Southeast": "-81.2 32.0, -81.2 34.0, -79.0 34.0, -79.0 32.0",
-        "Southwest": "-117.0 32.0, -117.0 36.0, -110.0 36.0, -110.0 32.0",
-        "Pacific Coast": "-124.0 32.0, -124.0 42.0, -117.0 42.0, -117.0 32.0",
-        "Midwest": "-97.0 36.0, -97.0 46.0, -85.0 46.0, -85.0 36.0",
-        "Northeast": "-80.0 40.0, -80.0 45.0, -70.0 45.0, -70.0 40.0",
-        "Mountain West": "-115.0 36.0, -115.0 45.0, -105.0 45.0, -105.0 36.0"
-    }
-    selected_polygon = region_bounds.get(region[0], region_bounds["Southeast"])
+# Function to fetch real Zillow listings via region using extended search
 
-    url = "https://zillow-com1.p.rapidapi.com/propertyByPolygon"
-    querystring = {
-        "polygon": selected_polygon,
-        "status_type": "ForSale",
-        "home_type": home_type[0] if home_type else "Houses",
-        "beds_min": beds_min,
-        "baths_min": baths_min,
-        "price_min": min_price,
-        "price_max": max_price
+def fetch_zillow_listings(beds_min, baths_min, home_type, min_price, max_price, region):
+    city_lookup = {
+        "Southeast": "Charleston, SC",
+        "Southwest": "Phoenix, AZ",
+        "Pacific Coast": "San Diego, CA",
+        "Midwest": "Columbus, OH",
+        "Northeast": "Boston, MA",
+        "Mountain West": "Boise, ID"
     }
+    cities = [city_lookup[r] for r in region if r in city_lookup]
 
     headers = {
         "x-rapidapi-host": "zillow-com1.p.rapidapi.com",
         "x-rapidapi-key": "941903cba9msh1acce231bdba4f0p1366fajsn7ffc07b009ec"
     }
 
-    response = requests.get(url, headers=headers, params=querystring)
-    if response.status_code == 200:
-        data = response.json()
-        filtered = [prop for prop in data.get("props", []) if prop.get("price") and min_price <= prop.get("price") <= max_price]
-        return {"props": filtered}
-    else:
-        return {"error": f"API error: {response.status_code}"}
+    all_results = []
+    url = "https://zillow-com1.p.rapidapi.com/propertyExtendedSearch"
+    for city in cities:
+        querystring = {
+            "location": city,
+            "status_type": "ForSale",
+            "home_type": home_type[0].lower().replace("+ ", "").replace(" ", "") if home_type else "house",
+            "beds_min": beds_min,
+            "baths_min": baths_min,
+            "price_min": min_price,
+            "price_max": max_price
+        }
+        response = requests.get(url, headers=headers, params=querystring)
+        if response.status_code == 200:
+            data = response.json()
+            all_results.extend([prop for prop in data.get("props", []) if prop.get("price") and min_price <= prop.get("price") <= max_price])
+
+    return {"props": all_results} if all_results else {"error": "No listings found for selected region(s)."}
 
 with st.form(key="home_form"):
-    region = st.multiselect("Which regions of the U.S. are you open to?", [
+    region = st.multiselect("Which regions of the U.S. are you open to (will be used to search multiple cities)?", [
         "Southeast", "Southwest", "Pacific Coast", "Midwest", "Northeast", "Mountain West"])
 
     climate = st.multiselect("What climate do you prefer?", [
@@ -118,9 +119,7 @@ with st.form(key="home_form"):
     min_price = st.number_input("Minimum Price ($)", min_value=0, value=200000, step=10000)
     max_price = st.number_input("Maximum Price ($)", min_value=50000, value=600000, step=10000)
 
-    desirable_nearby = st.multiselect("Must be within 30 minutes of:", ["Lake", "Mountain", "Beach", "Shopping", "Hospital", "Airport", "Family", "Friends"])
-    family_zip = st.text_input("ZIP code of family you'd like to be near (optional)")
-    friends_zip = st.text_input("ZIP code of friends you'd like to be near (optional)")
+    desirable_nearby = st.multiselect("Must be within 30 minutes of:", ["Lake", "Mountain", "Beach", "Shopping", "Hospital", "Airport"])
 
     submitted = st.form_submit_button("🔍 Find My Matches")
 
